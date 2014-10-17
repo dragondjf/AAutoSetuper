@@ -13,8 +13,8 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-lib/
 lib64/
+Publish/
 parts/
 sdist/
 var/
