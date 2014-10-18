@@ -106,69 +106,96 @@ winform.onClose = function(hwnd,message,wParam,lParam){
 winform.show(true) 
 
 
-import sevenZip.decoder2;
-import fsys.dlg;
- 
-var archive = sevenZip.decoder2();
-archive.printError = function(name,message){
-	console.log("出错了", name,message ) 
-}
-
-archive.open("/res/QFramer.7z")
-/*
-if( !archive.open( fsys.dlg.open("7z压缩包|*.7z||") ) ){
-	console.log("打开压缩包出错");
-	return;
-}
-*/
-//列出所有文件
-/**
-for(i=1;archive.count() ){
-	io.print( 
-		archive.getItemString(i,3/*_kpidPath*/), 
-		archive.getItemBoolean(i,6/*_kpidIsDir*/),
-		archive.getItemTime(i,0xC/*_kpidMTime*/),
-		archive.getItemNumber(i,7/*_kpidSize*/),
-	)
-}
-**/
-/*archive.extractSetTotal = function(size){
-	io.print("压缩包大小",fsys.formatSize(size) )
-}*/
- 
-archive.extractSetCompleted = function(lowSize,hiSize,percent){
-	winform.pie.text =  percent + " %";
+import thread.command;
+var listener = thread.command();
+listener.print = function( percent ){
+    winform.pie.text =  percent + " %";
 	winform.progress.text = percent + "%";
 	winform.pie.progressPercentage = percent;
 	winform.progress.progressPercentage = percent;
 }
 
-archive.extractPrepareOperation = function(askExtractMode,itemIndex,filepath,isDir){
-	console.log("正在解压",filepath)
-}
-archive.extractSetOperationResult = function(opRet){
-	if( opRet == 0/*kOK*/ ){
-	
+//import thread.event
+thread.invoke (
+	function(){
+		import console;
+		//import thread.event;
+        //var event = thread.event("Decode7z");
+        //event.wait();
+        import thread.command;
+		import sevenZip.decoder2;
+		import fsys.dlg;
+ 		
+		var archive = sevenZip.decoder2();
+		archive.printError = function(name,message){
+			console.log("出错了", name,message ) 
+		}
+		
+		archive.open("/res/QFramer.7z")
+		/*
+		if( !archive.open( fsys.dlg.open("7z压缩包|*.7z||") ) ){
+			console.log("打开压缩包出错");
+			return;
+		}
+		*/
+		//列出所有文件
+		/**
+		for(i=1;archive.count() ){
+			io.print( 
+				archive.getItemString(i,3/*_kpidPath*/), 
+				archive.getItemBoolean(i,6/*_kpidIsDir*/),
+				archive.getItemTime(i,0xC/*_kpidMTime*/),
+				archive.getItemNumber(i,7/*_kpidSize*/),
+			)
+		}
+		**/
+		
+		/*archive.extractSetTotal = function(size){
+			io.print("压缩包大小",fsys.formatSize(size) )
+		}*/
+ 		
+		archive.extractSetCompleted = function(lowSize,hiSize,percent){
+			import thread.command
+			thread.command.post("print",percent);
+		}
+		
+		/*
+		//列出解压的每个文件
+		archive.extractPrepareOperation = function(askExtractMode,itemIndex,filepath,isDir){
+			console.log("正在解压",filepath)
+		}
+		*/
+		
+		/**
+		archive.extractSetOperationResult = function(opRet){
+			if( opRet == 0/*kOK*/ ){
+			
+			}
+			elseif( opRet == 1/*kUnSupportedMethod*/ ){
+				io.print("Unsupported Method")
+			}
+			elseif( opRet == 0/*kDataError*/ ){
+				io.print("CRC Failed")
+			}
+			elseif( opRet == 0/*kCRCError*/ ){
+				io.print("Data Error")
+			}
+			else {
+				io.print("Unknown Error")
+			}
+		}
+		**/
+		if( archive.extract( "/") ){
+			//console.log("已完成所有操作")
+		}
+		else {
+			//console.log("解压缩遇到错误")
+		}	
 	}
-	elseif( opRet == 1/*kUnSupportedMethod*/ ){
-		io.print("Unsupported Method")
-	}
-	elseif( opRet == 0/*kDataError*/ ){
-		io.print("CRC Failed")
-	}
-	elseif( opRet == 0/*kCRCError*/ ){
-		io.print("Data Error")
-	}
-	else {
-		io.print("Unknown Error")
-	}
-}
-
-if( archive.extract( fsys.dlg.opendir(,,"请指定解压目录") ) ){
-	//console.log("已完成所有操作")
-}
-else {
-	//console.log("解压缩遇到错误")
-}
+)
+/*sleep(100)
+var event = thread.event("Decode7z", true);
+event.set()
+*/
 win.loopMessage();  
 hook.close();
