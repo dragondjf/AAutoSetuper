@@ -8,8 +8,8 @@ winform.add(
 ButtonClose={cls="plus";left=608;top=0;right=650;bottom=40;background="\res\appbar.close.png";notify=1;repeat="scale";z=1};
 ButtonMin={cls="plus";left=576;top=0;right=617;bottom=40;background="\res\appbar.minus.png";notify=1;repeat="scale";z=2};
 PictureViwer={cls="plus";left=0;top=40;right=651;bottom=528;foreground="\res\2.jpg";foreRepeat="scale";repeat="scale";z=5};
-pie={cls="plus";text="100%";left=0;top=0;right=80;bottom=40;background="\res\pie-bg.png";color=15793151;font=LOGFONT( h=-11 );foreground="\res\pie.png";foreRepeat="scale";repeat="scale";z=3};
-progress={cls="plus";text="100%";left=0;top=528;right=648;bottom=560;align="right";background="\res\progress-bg.jpg";bgcolor=65280;color=255;font=LOGFONT( h=-16 );foreground="\res\progress.jpg";foreRepeat="expand";z=4}
+pie={cls="plus";left=0;top=0;right=80;bottom=40;background="\res\pie-bg.png";color=15793151;font=LOGFONT( h=-11 );foreground="\res\pie.png";foreRepeat="scale";repeat="scale";z=3};
+progress={cls="plus";left=0;top=528;right=648;bottom=560;align="right";background="\res\progress-bg.jpg";bgcolor=65280;color=2719744;font=LOGFONT( h=-16 );foreground="\res\progress.jpg";foreRepeat="expand";z=4}
 )
 /*}}*/
 
@@ -84,7 +84,7 @@ var Decode7z = function(){
         	import thread.command;
 			import sevenZip.decoder2;
 			import fsys.dlg;
- 			
+ 			console.log("出错了sdasdsddsds");
 			var archive = sevenZip.decoder2();
 			archive.printError = function(name,message){
 				console.log("出错了", name,message ) 
