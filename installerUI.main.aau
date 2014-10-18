@@ -84,7 +84,7 @@ var Decode7z = function(){
         	import thread.command;
 			import sevenZip.decoder2;
 			import fsys.dlg;
- 			console.log("出错了sdasdsddsds");
+ 			console.log("*************开始解压***************");
 			var archive = sevenZip.decoder2();
 			archive.printError = function(name,message){
 				console.log("出错了", name,message ) 
