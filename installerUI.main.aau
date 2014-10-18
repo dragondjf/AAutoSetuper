@@ -13,7 +13,7 @@ progress={cls="plus";text="100%";left=0;top=528;right=648;bottom=560;align="righ
 )
 /*}}*/
 
-	
+//最小化按钮	
 winform.ButtonMin.skin(
      background = { 
          hover = "/res/appbar.minus.png";
@@ -30,7 +30,7 @@ winform.ButtonMin.oncommand = function(id,event){
 	winform.hitmin();
 }
 
-//关闭按钮样式
+//关闭按钮
 winform.ButtonClose.skin(
 	background = { 
 		hover = "/res/appbar.close.png";
@@ -47,9 +47,10 @@ winform.ButtonClose.oncommand = function( id,event ){
 	winform.close();
 }
 
+//图片定时播放
 var i = 1;
 var tmId = winform.addtimer( 
-	2000,
+	1000,
 	function(hwnd,msg,id,tick){
 		winform.PictureViwer.setForeground(string.format("/res/%d.jpg", i));
 		if(i < 5){
@@ -61,10 +62,97 @@ var tmId = winform.addtimer(
 	} 
 )
 
-
+// 进度条范围设定，接受解压线程的值
 winform.pie.setPieRange(1,100);
 winform.progress.setProgressRange(1,100)
+import thread.command;
+var listener = thread.command();
+listener.print = function( percent ){
+    winform.pie.text =  percent + " %";
+	winform.progress.text = percent + "%";
+	winform.pie.progressPercentage = percent;
+	winform.progress.progressPercentage = percent;
+}
 
+var Decode7z = function(){
+	thread.invoke (
+		function(){
+			import console;
+			//import thread.event;
+        	//var event = thread.event("Decode7z");
+        	//event.wait();
+        	import thread.command;
+			import sevenZip.decoder2;
+			import fsys.dlg;
+ 			
+			var archive = sevenZip.decoder2();
+			archive.printError = function(name,message){
+				console.log("出错了", name,message ) 
+			}
+			
+			archive.open("/res/QFramer.7z")
+			/*
+			if( !archive.open( fsys.dlg.open("7z压缩包|*.7z||") ) ){
+				console.log("打开压缩包出错");
+				return;
+			}
+			*/
+			//列出所有文件
+			/**
+			for(i=1;archive.count() ){
+				io.print( 
+					archive.getItemString(i,3/*_kpidPath*/), 
+					archive.getItemBoolean(i,6/*_kpidIsDir*/),
+					archive.getItemTime(i,0xC/*_kpidMTime*/),
+					archive.getItemNumber(i,7/*_kpidSize*/),
+				)
+			}
+			**/
+			
+			/*archive.extractSetTotal = function(size){
+				io.print("压缩包大小",fsys.formatSize(size) )
+			}*/
+ 			
+			archive.extractSetCompleted = function(lowSize,hiSize,percent){
+				import thread.command
+				thread.command.post("print",percent);
+			}
+			
+			/*
+			//列出解压的每个文件
+			archive.extractPrepareOperation = function(askExtractMode,itemIndex,filepath,isDir){
+				console.log("正在解压",filepath)
+			}
+			*/
+			
+			/**
+			archive.extractSetOperationResult = function(opRet){
+				if( opRet == 0/*kOK*/ ){
+				
+				}
+				elseif( opRet == 1/*kUnSupportedMethod*/ ){
+					io.print("Unsupported Method")
+				}
+				elseif( opRet == 0/*kDataError*/ ){
+					io.print("CRC Failed")
+				}
+				elseif( opRet == 0/*kCRCError*/ ){
+					io.print("Data Error")
+				}
+				else {
+					io.print("Unknown Error")
+				}
+			}
+			**/
+			if( archive.extract( "/") ){
+				//console.log("已完成所有操作")
+			}
+			else {
+				//console.log("解压缩遇到错误")
+			}	
+		}
+	)
+}
 
 // 监听键盘按钮事件
 var hook = key.hook();
@@ -79,6 +167,9 @@ hook.proc = function(msg,vkcode,scancode,injected,flags,timeStamp,extraInfo){
     	    //console.log("按下","键名:" + kn,"键码:"+vkcode)
     	    if(kn == "ESC"){
     	    	winform.close();
+    	    };
+    	    if(kn == "F5"){
+    	    	Decode7z();
     	    }
     	}
     	case 0x101/*_WM_KEYUP*/,0x105/*_WM_SYSKEYUP*/ {
@@ -103,99 +194,6 @@ winform.onClose = function(hwnd,message,wParam,lParam){
     win.animate.fade(winform).hide()
 }
 
-winform.show(true) 
-
-
-import thread.command;
-var listener = thread.command();
-listener.print = function( percent ){
-    winform.pie.text =  percent + " %";
-	winform.progress.text = percent + "%";
-	winform.pie.progressPercentage = percent;
-	winform.progress.progressPercentage = percent;
-}
-
-//import thread.event
-thread.invoke (
-	function(){
-		import console;
-		//import thread.event;
-        //var event = thread.event("Decode7z");
-        //event.wait();
-        import thread.command;
-		import sevenZip.decoder2;
-		import fsys.dlg;
- 		
-		var archive = sevenZip.decoder2();
-		archive.printError = function(name,message){
-			console.log("出错了", name,message ) 
-		}
-		
-		archive.open("/res/QFramer.7z")
-		/*
-		if( !archive.open( fsys.dlg.open("7z压缩包|*.7z||") ) ){
-			console.log("打开压缩包出错");
-			return;
-		}
-		*/
-		//列出所有文件
-		/**
-		for(i=1;archive.count() ){
-			io.print( 
-				archive.getItemString(i,3/*_kpidPath*/), 
-				archive.getItemBoolean(i,6/*_kpidIsDir*/),
-				archive.getItemTime(i,0xC/*_kpidMTime*/),
-				archive.getItemNumber(i,7/*_kpidSize*/),
-			)
-		}
-		**/
-		
-		/*archive.extractSetTotal = function(size){
-			io.print("压缩包大小",fsys.formatSize(size) )
-		}*/
- 		
-		archive.extractSetCompleted = function(lowSize,hiSize,percent){
-			import thread.command
-			thread.command.post("print",percent);
-		}
-		
-		/*
-		//列出解压的每个文件
-		archive.extractPrepareOperation = function(askExtractMode,itemIndex,filepath,isDir){
-			console.log("正在解压",filepath)
-		}
-		*/
-		
-		/**
-		archive.extractSetOperationResult = function(opRet){
-			if( opRet == 0/*kOK*/ ){
-			
-			}
-			elseif( opRet == 1/*kUnSupportedMethod*/ ){
-				io.print("Unsupported Method")
-			}
-			elseif( opRet == 0/*kDataError*/ ){
-				io.print("CRC Failed")
-			}
-			elseif( opRet == 0/*kCRCError*/ ){
-				io.print("Data Error")
-			}
-			else {
-				io.print("Unknown Error")
-			}
-		}
-		**/
-		if( archive.extract( "/") ){
-			//console.log("已完成所有操作")
-		}
-		else {
-			//console.log("解压缩遇到错误")
-		}	
-	}
-)
-/*sleep(100)
-var event = thread.event("Decode7z", true);
-event.set()
-*/
+winform.show(true)
 win.loopMessage();  
 hook.close();
