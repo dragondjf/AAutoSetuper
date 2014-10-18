@@ -1,6 +1,7 @@
 import win.ui;
 import win.animate;
 import key.hook;
+import com.interface.ITaskbarList3;
 import console;
 /*DSG{{*/
 winform = ..win.form(text="Setuper";right=650;bottom=560;bgcolor=4734261;border="none")
@@ -62,6 +63,19 @@ var tmId = winform.addtimer(
 	} 
 )
 
+
+winform.wndproc = function(hwnd,message,wParam,lParam){
+	select( message ) {
+		/*任务栏显示进度*/ 
+		case _WM_TASKBARBUTTONCREATED{ 
+			winform.taskbar = com.interface.ITaskbarList3.Create() 
+		} 
+		case 0x201/*窗体拖动 */{
+			winform.hitCaption();
+		}
+	} 
+}
+
 // 进度条范围设定，接受解压线程的值
 winform.pie.setPieRange(1,100);
 winform.progress.setProgressRange(1,100)
@@ -72,6 +86,7 @@ listener.print = function( percent ){
 	winform.progress.text = percent + "%";
 	winform.pie.progressPercentage = percent;
 	winform.progress.progressPercentage = percent;
+	winform.taskbar.SetProgressValue(winform.hwnd, percent, 100)
 }
 
 var Decode7z = function(){
@@ -84,13 +99,11 @@ var Decode7z = function(){
         	import thread.command;
 			import sevenZip.decoder2;
 			import fsys.dlg;
- 			console.log("*************开始解压***************");
 			var archive = sevenZip.decoder2();
 			archive.printError = function(name,message){
 				console.log("出错了", name,message ) 
 			}
-			
-			archive.open("/res/QFramer.7z")
+			archive.open(io._exepath)
 			/*
 			if( !archive.open( fsys.dlg.open("7z压缩包|*.7z||") ) ){
 				console.log("打开压缩包出错");
@@ -144,12 +157,12 @@ var Decode7z = function(){
 				}
 			}
 			**/
-			if( archive.extract( "/") ){
+			if( archive.extract("/") ){
 				//console.log("已完成所有操作")
 			}
 			else {
 				//console.log("解压缩遇到错误")
-			}	
+			}
 		}
 	)
 }
@@ -178,14 +191,6 @@ hook.proc = function(msg,vkcode,scancode,injected,flags,timeStamp,extraInfo){
     } 
     
     if( win.getForeground() == winform.hwnd ) return true;  
-}
-
-
-//添加下面的代码以支持鼠标拖动窗体
-winform.wndproc = {
-	[ 0x201/*_WM_LBUTTONDOWN*/ ] = function(hwnd,message,wParam,lParam){
-		winform.hitCaption();
-	}
 }
 
 
